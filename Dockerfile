@@ -37,7 +37,7 @@ RUN \
 	/opt/radarr --strip-components=1 && \
 
 # install subliminal
-	pip install subliminal && \
+ pip3 install subliminal && \
 
 # clean up
  rm -rf \
