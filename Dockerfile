@@ -16,7 +16,8 @@ RUN \
  apt-get install -y \
 	libcurl3 \
 	libmono-cil-dev \
-	mediainfo && \
+	mediainfo \
+	python3 && \
 
 # install radarr
  radarr_tag=$(curl -sX GET "https://api.github.com/repos/Radarr/Radarr/releases" \
@@ -29,6 +30,9 @@ RUN \
  tar ixzf \
  /tmp/radar.tar.gz -C \
 	/opt/radarr --strip-components=1 && \
+
+# install subliminal
+	pip install subliminal && \
 
 # clean up
  rm -rf \
