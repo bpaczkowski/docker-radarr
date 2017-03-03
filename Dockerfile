@@ -17,7 +17,8 @@ RUN \
 	libcurl3 \
 	libmono-cil-dev \
 	mediainfo \
-	python3 && \
+	python3 \
+	python3-pip && \
 
 # install radarr
  radarr_tag=$(curl -sX GET "https://api.github.com/repos/Radarr/Radarr/releases" \
