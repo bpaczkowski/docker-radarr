@@ -10,6 +10,10 @@ ARG BUILD_DATE
 ARG VERSION
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 
+# set env variables needed for subliminal to run
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 # install packages
 RUN \
  apt-get update && \
