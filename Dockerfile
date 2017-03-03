@@ -5,14 +5,14 @@ MAINTAINER sparklyballs
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_CONFIG_HOME="/config/xdg"
 
+# set env variables needed for subliminal to run
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 # set version label
 ARG BUILD_DATE
 ARG VERSION
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-
-# set env variables needed for subliminal to run
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
 
 # install packages
 RUN \
@@ -22,7 +22,8 @@ RUN \
 	libmono-cil-dev \
 	mediainfo \
 	python3 \
-	python3-pip && \
+	python3-pip \
+	nodejs && \
 
 # install radarr
  radarr_tag=$(curl -sX GET "https://api.github.com/repos/Radarr/Radarr/releases" \
