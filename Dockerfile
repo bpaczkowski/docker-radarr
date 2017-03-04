@@ -49,6 +49,9 @@ RUN \
 # add local files
 COPY /root /
 
+# set run-subliminal permissions
+RUN chmod +x /opt/run-subliminal
+
 # ports and volumes
 EXPOSE 7878
 VOLUME /config /downloads /movies

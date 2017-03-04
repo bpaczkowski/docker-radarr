@@ -2,7 +2,9 @@
 const exec = require('child_process').exec;
 
 const subDir = '/config/sub-cache';
-const pathEnvName = 'Radarr_MovieFile_Path';
+const pathEnvName = 'radarr_moviefile_path';
+
+console.log('env: ', JSON.stringify(process.env));
 
 if (!('SUB_LANGUAGES' in process.env) || !('SUB_PROVIDERS' in process.env) || !(pathEnvName in process.env)) {
   return;
