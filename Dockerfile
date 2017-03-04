@@ -23,7 +23,8 @@ RUN \
 	mediainfo \
 	python3 \
 	python3-pip \
-	nodejs && \
+	nodejs \
+	at && \
 
 # install radarr
  radarr_tag=$(curl -sX GET "https://api.github.com/repos/Radarr/Radarr/releases" \

@@ -1,8 +1,12 @@
 #!/usr/bin/nodejs
 const exec = require('child_process').exec;
 
-const subDir = '/config/sub-cache';
+// Options
+const subCacheDir = '/config/sub-cache';
 const pathEnvName = 'radarr_moviefile_path';
+const maxTries = ('MAX_TRIES' in process.env) ? parseInt(process.env.MAX_RETRIES, 10) : 5;
+// Options end
+const subliminalOutputRegex = /([0-9]*) video collected[\s\S]*Downloaded ([0-9]*) subtitle/;
 
 console.log('env: ', JSON.stringify(process.env));
 
@@ -13,20 +17,32 @@ if (!('SUB_LANGUAGES' in process.env) || !('SUB_PROVIDERS' in process.env) || !(
 const languages = process.env.SUB_LANGUAGES.split(',').map(v => '-l ' + v).join(' ');
 const providers = process.env.SUB_PROVIDERS.split(',').map(v => '-p ' + v).join(' ');
 
-const cmd = `subliminal --cache-dir ${subDir} download ${languages} ${providers} "${process.env[pathEnvName]}"`;
+const cmd = `subliminal --cache-dir ${subCacheDir} download ${languages} ${providers} "${process.env[pathEnvName]}"`;
 
 console.log(`executing: ${cmd}`);
 
 exec(cmd, (err, stdout, stderr) => {
-  if (err) {
-    return console.log(err);
+  if (err || stderr) {
+    return console.log(err || stderr);
   }
 
-  if (stdout) {
-    console.log(stdout);
+  const results = subliminalOutputRegex.exec(stdout);
+
+  if (results.length !== 3 || isNaN(results[1]) || isNaN(results[2])) {
+    return;
   }
 
-  if (stderr) {
-    console.log(stderr);
+  const videosFound = parseInt(results[1], 10);
+  const subtitlesDownloaded = parseInt(results[2], 10);
+
+  if (videosFound !== subtitlesDownloaded) {
+    const timesRun = (process.argv.length > 2 && !isNaN(process.argv[2])) ? parseInt(process.argv[2], 10) : 1;
+
+    if (timesRun >= maxTries) {
+      return;
+    }
+
+    const delay = Math.pow(2, timesRun);
+    exec(`at now + ${delay} minutes <<< "${__filename} ${timesRun + 1}"`, { shell: '/bin/bash' });
   }
 });
