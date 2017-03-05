@@ -6,9 +6,8 @@ const subCacheDir = '/config/sub-cache';
 const pathEnvName = 'radarr_moviefile_path';
 const maxTries = ('SUB_MAX_TRIES' in process.env) ? parseInt(process.env.SUB_MAX_TRIES, 10) : 5;
 // Options end
-const subliminalOutputRegex = /([0-9]*) video collected[\s\S]*Downloaded ([0-9]*) subtitle/;
 
-console.log('env: ', JSON.stringify(process.env));
+const subliminalOutputRegex = /([0-9]+) video collected[\s\S]*Downloaded ([0-9]+) subtitle/;
 
 if (!('SUB_LANGUAGES' in process.env) || !('SUB_PROVIDERS' in process.env) || !(pathEnvName in process.env)) {
   return;
@@ -26,16 +25,18 @@ exec(cmd, (err, stdout, stderr) => {
     return console.log(err || stderr);
   }
 
+  console.log(stdout);
+
   const results = subliminalOutputRegex.exec(stdout);
 
-  if (results.length !== 3 || isNaN(results[1]) || isNaN(results[2])) {
+  if (!results || results.length !== 3 || isNaN(results[1]) || isNaN(results[2])) {
     return;
   }
 
   const videosFound = parseInt(results[1], 10);
   const subtitlesDownloaded = parseInt(results[2], 10);
 
-  if (videosFound !== subtitlesDownloaded) {
+  if (videosFound !== 0 && videosFound !== subtitlesDownloaded) {
     const timesRun = (process.argv.length > 2 && !isNaN(process.argv[2])) ? parseInt(process.argv[2], 10) : 1;
 
     if (timesRun >= maxTries) {
