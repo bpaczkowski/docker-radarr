@@ -1,5 +1,7 @@
 #!/usr/bin/with-contenv bash
 
+umask 000
+
 cd /opt/radarr || exit
 
 exec \
