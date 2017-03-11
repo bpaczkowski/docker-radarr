@@ -1,5 +1,21 @@
 #!/usr/bin/nodejs
 const exec = require('child_process').exec;
+const fs = require('fs');
+const util = require('util');
+
+let logStream;
+
+const log = message => {
+  if (!logStream) {
+    logStream = fs.createWriteStream('/config/subliminal.log', { flags: 'a' });
+  }
+
+  logStream.write(`${new Date().toISOString().replace(/[TZ]/g, ' ')}: ${message}\n`)
+};
+
+process.on('uncaughtException', err => {
+  log(util.inspect(err, false, null));
+});
 
 // Options
 const subCacheDir = '/config/sub-cache';
@@ -10,7 +26,7 @@ const maxTries = ('SUB_MAX_TRIES' in process.env) ? parseInt(process.env.SUB_MAX
 const subliminalOutputRegex = /([0-9]+) video collected[\s\S]*Downloaded ([0-9]+) subtitle/;
 
 if (!('SUB_LANGUAGES' in process.env) || !('SUB_PROVIDERS' in process.env) || !(pathEnvName in process.env)) {
-  return;
+  return log('Some env variables were not provided');
 }
 
 const languages = process.env.SUB_LANGUAGES.split(',').map(v => '-l ' + v).join(' ');
@@ -22,7 +38,7 @@ console.log(`executing: ${cmd}`);
 
 exec(cmd, (err, stdout, stderr) => {
   if (err || stderr) {
-    return console.log(err || stderr);
+    return log(util.inspect(err || stderr, false, null));
   }
 
   console.log(stdout);
@@ -30,7 +46,7 @@ exec(cmd, (err, stdout, stderr) => {
   const results = subliminalOutputRegex.exec(stdout);
 
   if (!results || results.length !== 3 || isNaN(results[1]) || isNaN(results[2])) {
-    return;
+    return log(`Could not parse subliminal output:\n${stdout}`);
   }
 
   const videosFound = parseInt(results[1], 10);
@@ -40,10 +56,14 @@ exec(cmd, (err, stdout, stderr) => {
     const timesRun = (process.argv.length > 2 && !isNaN(process.argv[2])) ? parseInt(process.argv[2], 10) : 1;
 
     if (timesRun >= maxTries) {
-      return;
+      return log(`Subtitle download for file ${process.env[pathEnvName]} failed after ${maxTries} tries`);
     }
 
     const delay = Math.pow(2, timesRun);
-    exec(`at now + ${delay} hours <<< "${__filename} ${timesRun + 1}"`, { shell: '/bin/bash' });
+    exec(`at now + ${delay} hours <<< "${__filename} ${timesRun + 1}"`, { shell: '/bin/bash' }, (err, stdout, stderr) => {
+      if (err || stderr) {
+        log(util.inspect(err || stderr, false, null));
+      }
+    });
   }
 });
