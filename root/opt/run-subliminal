@@ -1,4 +1,13 @@
 #!/usr/bin/nodejs
+'use strict';
+
+// Options
+const subCacheDir = '/config/sub-cache';
+const logFile = '/config/sub.log';
+const pathEnvName = 'radarr_moviefile_path';
+const maxTries = ('SUB_MAX_TRIES' in process.env) ? parseInt(process.env.SUB_MAX_TRIES, 10) : 5;
+// Options end
+
 const exec = require('child_process').exec;
 const fs = require('fs');
 const util = require('util');
@@ -7,23 +16,18 @@ let logStream;
 
 const log = message => {
   if (!logStream) {
-    logStream = fs.createWriteStream('/config/subliminal.log', { flags: 'a' });
+    logStream = fs.createWriteStream(logFile, { flags: 'a' });
   }
 
-  logStream.write(`${new Date().toISOString().replace(/[TZ]/g, ' ')}: ${message}\n`)
+  logStream.write(`${new Date().toISOString().replace(/[TZ]/g, ' ')}: ${message}\n`);
 };
 
 process.on('uncaughtException', err => {
   log(util.inspect(err, false, null));
 });
 
-// Options
-const subCacheDir = '/config/sub-cache';
-const pathEnvName = 'radarr_moviefile_path';
-const maxTries = ('SUB_MAX_TRIES' in process.env) ? parseInt(process.env.SUB_MAX_TRIES, 10) : 5;
-// Options end
-
-const subliminalOutputRegex = /([0-9]+) video collected[\s\S]*Downloaded ([0-9]+) subtitle/;
+const videoCollectedRegex = /([0-9]+) video collected/;
+const subtitlesDownloadedRegex = /Downloaded ([0-9]+) subtitle/;
 
 if (!('SUB_LANGUAGES' in process.env) || !('SUB_PROVIDERS' in process.env) || !(pathEnvName in process.env)) {
   return log('Some env variables were not provided');
@@ -43,14 +47,25 @@ exec(cmd, (err, stdout, stderr) => {
 
   console.log(stdout);
 
-  const results = subliminalOutputRegex.exec(stdout);
+  const videoCollectedResult = videoCollectedRegex.exec(stdout);
 
-  if (!results || results.length !== 3 || isNaN(results[1]) || isNaN(results[2])) {
+  if (!videoCollectedResult || videoCollectedResult.length !== 2 || isNaN(videoCollectedResult[1])) {
     return log(`Could not parse subliminal output:\n${stdout}`);
   }
 
-  const videosFound = parseInt(results[1], 10);
-  const subtitlesDownloaded = parseInt(results[2], 10);
+  const videosFound = parseInt(videoCollectedResult[1], 10);
+
+  if (videosFound === 0) {
+    return;
+  }
+
+  const subtitlesDownloadedResult = subtitlesDownloadedRegex.exec(stdout);
+
+  if (!subtitlesDownloadedResult || subtitlesDownloadedResult.length !== 2 || isNaN(subtitlesDownloadedResult[1])) {
+    return log(`Could not parse subliminal output:\n${stdout}`);
+  }
+
+  const subtitlesDownloaded = parseInt(subtitlesDownloadedResult[2], 10);
 
   if (videosFound !== 0 && videosFound !== subtitlesDownloaded) {
     const timesRun = (process.argv.length > 2 && !isNaN(process.argv[2])) ? parseInt(process.argv[2], 10) : 1;
