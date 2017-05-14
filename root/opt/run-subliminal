@@ -33,10 +33,12 @@ if (!('SUB_LANGUAGES' in process.env) || !('SUB_PROVIDERS' in process.env) || !(
   return log('Some env variables were not provided');
 }
 
-const languages = process.env.SUB_LANGUAGES.split(',').map(v => '-l ' + v).join(' ');
+let languages = process.env.SUB_LANGUAGES.split(',').map(v => '-l ' + v);
+const languageSuffix = languages.length > 1;
+languages = languages.join(' ');
 const providers = process.env.SUB_PROVIDERS.split(',').map(v => '-p ' + v).join(' ');
 
-const cmd = `subliminal --cache-dir ${subCacheDir} download ${languages} ${providers} "${process.env[pathEnvName]}"`;
+const cmd = `subliminal --cache-dir ${subCacheDir} download ${languageSuffix ? '' : '-s'} ${languages} ${providers} "${process.env[pathEnvName]}"`;
 
 console.log(`executing: ${cmd}`);
 
