@@ -1,4 +1,4 @@
-FROM lsiobase/xenial
+FROM lsiobase/mono
 MAINTAINER sparklyballs
 
 # environment settings
@@ -18,9 +18,6 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 RUN \
  apt-get update && \
  apt-get install -y \
-	libcurl3 \
-	libmono-cil-dev \
-	mediainfo \
 	python3 \
 	python3-pip \
 	nodejs \
