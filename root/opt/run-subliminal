@@ -67,7 +67,7 @@ exec(cmd, (err, stdout, stderr) => {
     return log(`Could not parse subliminal output:\n${stdout}`);
   }
 
-  const subtitlesDownloaded = parseInt(subtitlesDownloadedResult[2], 10);
+  const subtitlesDownloaded = parseInt(subtitlesDownloadedResult[1], 10);
 
   if (videosFound !== 0 && videosFound !== subtitlesDownloaded) {
     const timesRun = (process.argv.length > 2 && !isNaN(process.argv[2])) ? parseInt(process.argv[2], 10) : 1;
