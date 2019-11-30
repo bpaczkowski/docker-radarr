@@ -1,4 +1,4 @@
-FROM lsiobase/mono:LTS
+FROM lsiobase/mono:arm64v8-LTS
 
 # set version label
 ARG BUILD_DATE
@@ -11,19 +11,11 @@ LABEL maintainer="sparklyballs"
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_CONFIG_HOME="/config/xdg"
 
-# set env variables needed for subliminal to run
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-
 RUN \
  echo "**** install jq ****" && \
  apt-get update && \
  apt-get install -y \
-	jq \
-    python3 \
-    python3-pip \
-    nodejs \
-    at && \
+	jq && \
  echo "**** install radarr ****" && \
  if [ -z ${RADARR_RELEASE+x} ]; then \
 	RADARR_RELEASE=$(curl -sX GET "https://api.github.com/repos/Radarr/Radarr/releases" \
@@ -39,8 +31,6 @@ RUN \
  tar ixzf \
  /tmp/radar.tar.gz -C \
 	/opt/radarr --strip-components=1 && \
-echo "**** install subliminal ****" && \
- pip3 install subliminal && \
  echo "**** clean up ****" && \
  rm -rf \
 	/tmp/* \
@@ -49,9 +39,6 @@ echo "**** install subliminal ****" && \
 
 # add local files
 COPY /root /
-
-# set run-subliminal permissions
-RUN chmod +x /opt/run-subliminal
 
 # ports and volumes
 EXPOSE 7878
