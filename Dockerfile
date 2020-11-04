@@ -1,11 +1,11 @@
-FROM lsiobase/mono:LTS
+FROM ghcr.io/linuxserver/baseimage-mono:LTS
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
 ARG RADARR_RELEASE
 LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
-LABEL maintainer="sparklyballs"
+LABEL maintainer="aptalca"
 
 # environment settings
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -32,13 +32,13 @@ RUN \
  radarr_url=$(curl -s https://api.github.com/repos/Radarr/Radarr/releases/tags/"${RADARR_RELEASE}" \
 	|jq -r '.assets[].browser_download_url' |grep linux) && \
  mkdir -p \
-	/opt/radarr && \
+	/app/radarr/bin && \
  curl -o \
  /tmp/radar.tar.gz -L \
 	"${radarr_url}" && \
  tar ixzf \
  /tmp/radar.tar.gz -C \
-	/opt/radarr --strip-components=1 && \
+	/app/radarr/bin --strip-components=1 && \
 echo "**** install subliminal ****" && \
  pip3 install subliminal && \
  echo "**** clean up ****" && \
