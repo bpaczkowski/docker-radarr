@@ -40,7 +40,7 @@ RUN \
  /tmp/radar.tar.gz -C \
 	/opt/radarr --strip-components=1 && \
 echo "**** install subliminal ****" && \
- pip3 install subliminal==2.0.5 && \
+ pip3 install subliminal && \
  echo "**** clean up ****" && \
  rm -rf \
 	/tmp/* \
